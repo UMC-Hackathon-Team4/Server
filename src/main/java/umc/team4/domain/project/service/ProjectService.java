@@ -17,4 +17,6 @@ public interface ProjectService {
 
     List<ProjectResponseDto.ProjectSummaryDto> getRandomProjects();
     ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable);
+    List<ProjectResponseDto.ProjectSummaryDto> getDeadlineProjects();
+
 }

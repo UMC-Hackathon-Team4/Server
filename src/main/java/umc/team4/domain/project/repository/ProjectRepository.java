@@ -9,6 +9,7 @@ import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.user.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -17,4 +18,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findRandomFiveProjects(Pageable pageable);
 
     Page<Project> findByCategory(Category category, Pageable pageable);
+    List<Project> findByEndDateAfterOrderByEndDateAsc(LocalDate today);
 }

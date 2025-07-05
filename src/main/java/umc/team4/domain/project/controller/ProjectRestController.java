@@ -1,5 +1,6 @@
 package umc.team4.domain.project.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +51,13 @@ public class ProjectRestController {
     public ResponseEntity<ApiResponse> getRandomProjects() {
         List<ProjectResponseDto.ProjectSummaryDto> response = projectService.getRandomProjects();
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
+    }
+
+    @Operation(summary = "마감 임박 프로젝트 전체 조회", description = "오늘 이후 마감되는 모든 프로젝트를 마감일 오름차순으로 조회합니다.")
+    @GetMapping("/deadline")
+    public ResponseEntity<ApiResponse> getDeadlineProjects() {
+        List<ProjectResponseDto.ProjectSummaryDto> result = projectService.getDeadlineProjects();
+        return ApiResponse.onSuccess(SuccessStatus._OK, result);
     }
 
 }
