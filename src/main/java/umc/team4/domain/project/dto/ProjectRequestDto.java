@@ -14,7 +14,6 @@ public class ProjectRequestDto {
     @AllArgsConstructor
     @Builder
     public static class Create {
-        private Long userId;
         private Category category;
         private Long targetAmount;
         private LocalDate startDate;

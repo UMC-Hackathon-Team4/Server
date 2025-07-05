@@ -186,9 +186,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create dto) {
-        User user = userRepository.findById(dto.getUserId())
+    public ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create dto, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
         if (dto.getTargetAmount() == null || dto.getTargetAmount() <= 0) {
             throw new GeneralException(ErrorStatus.INVALID_TARGET_AMOUNT);
         }

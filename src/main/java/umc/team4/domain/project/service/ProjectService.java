@@ -20,5 +20,5 @@ public interface ProjectService {
     ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable);
     List<ProjectResponseDto.ProjectSummaryDto> getDeadlineProjects();
 
-    ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create requestDto);
+    ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create requestDto, Long userId);
 }
