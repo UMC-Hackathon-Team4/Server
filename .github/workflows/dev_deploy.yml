@@ -25,7 +25,7 @@ jobs:
       # 3️⃣ application.properties 생성
       - name: Create application.properties
         run: |
-          cat <<EOF > Server/src/main/resources/application.properties
+          cat <<EOF > src/main/resources/application.properties
           spring.application.name=team4
           
           # DB
@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: team4-Server
-          path: Server/build/libs/*.jar
+          path: /build/libs/*.jar
 
       # 6️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
       - name: Upload Test Results
@@ -63,7 +63,7 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: Server/build/reports/tests/test/
+          path: /build/reports/tests/test/
 
   deploy:
     needs: build
