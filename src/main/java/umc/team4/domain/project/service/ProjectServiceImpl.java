@@ -1,5 +1,6 @@
 package umc.team4.domain.project.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,11 +15,13 @@ import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.fund.entity.Fund;
 import umc.team4.domain.fund.repository.FundRepository;
 import umc.team4.domain.funding.repository.FundingRepository;
+import umc.team4.domain.project.dto.ProjectRequestDto;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.project.repository.ProjectRepository;
 import umc.team4.domain.user.entity.User;
+import umc.team4.domain.user.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +33,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final FundingRepository fundingRepository;
+    private final UserRepository userRepository;
+    private final FundRepository fundRepository;
 
     private Project findProject(Long projectId) {
         return projectRepository.findById(projectId)
@@ -169,6 +174,42 @@ public class ProjectServiceImpl implements ProjectService {
                         .endDate(p.getEndDate())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create dto) {
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        Project project = Project.builder()
+                .user(user)
+                .category(dto.getCategory())
+                .targetAmount(dto.getTargetAmount())
+                .currentAmount(0L)
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .title(dto.getTitle())
+                .summary(dto.getSummary())
+                .description(dto.getDescription())
+                .story(dto.getStory())
+                .imageUrl(dto.getImageUrl())
+                .build();
+
+        projectRepository.save(project);
+
+        List<Fund> funds = dto.getRewards().stream()
+                .map(r -> Fund.builder()
+                        .project(project)
+                        .title(r.getTitle())
+                        .description(r.getDescription())
+                        .price(r.getPrice())
+                        .stock(r.getStock())
+                        .build())
+                .toList();
+
+        fundRepository.saveAll(funds);
+        return null;
     }
 
 }

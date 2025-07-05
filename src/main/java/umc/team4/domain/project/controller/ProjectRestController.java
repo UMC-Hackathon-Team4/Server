@@ -10,6 +10,7 @@ import umc.team4.common.exception.GeneralException;
 import umc.team4.common.response.ApiResponse;
 import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
+import umc.team4.domain.project.dto.ProjectRequestDto;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.service.ProjectService;
@@ -58,6 +59,13 @@ public class ProjectRestController {
     public ResponseEntity<ApiResponse> getDeadlineProjects() {
         List<ProjectResponseDto.ProjectSummaryDto> result = projectService.getDeadlineProjects();
         return ApiResponse.onSuccess(SuccessStatus._OK, result);
+    }
+
+
+    @PostMapping
+    public ResponseEntity<ApiResponse> createProject(@RequestBody ProjectRequestDto.Create dto) {
+        ProjectResponseDto.ProjectCreate response = projectService.createProject(dto);
+        return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 
 }
