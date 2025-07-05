@@ -59,6 +59,9 @@ public class Project {
     @Column
     private LocalDate endDate;
 
+    @Column(nullable = false)
+    private Long supportersCount;
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Fund> funds;
 
