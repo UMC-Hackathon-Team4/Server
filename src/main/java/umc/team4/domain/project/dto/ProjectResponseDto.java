@@ -67,6 +67,7 @@ public class ProjectResponseDto {
         private String category;
         private Long currentAmount;
         private Long targetAmount;
+        private String percentage;
         private LocalDate endDate;
     }
 

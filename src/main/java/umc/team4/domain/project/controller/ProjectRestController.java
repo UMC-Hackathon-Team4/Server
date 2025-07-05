@@ -2,6 +2,8 @@ package umc.team4.domain.project.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.team4.common.exception.GeneralException;
@@ -9,6 +11,7 @@ import umc.team4.common.response.ApiResponse;
 import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.project.dto.ProjectResponseDto;
+import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.service.ProjectService;
 
 import java.util.List;
@@ -19,6 +22,16 @@ import java.util.List;
 public class ProjectRestController {
 
     private final ProjectService projectService;
+
+    @GetMapping("/lists")
+    public ResponseEntity<ApiResponse> getProjectsListByCategory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam Category category
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return projectService.getListByCategory(category, pageable);
+    }
 
     @GetMapping("/{projectId}")
     public ResponseEntity<ApiResponse> getProjectInfo(
