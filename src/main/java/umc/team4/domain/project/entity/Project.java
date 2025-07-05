@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import umc.team4.domain.fund.entity.Fund;
 import umc.team4.domain.purchase.entity.Wallet;
+import umc.team4.domain.user.entity.User;
 import umc.team4.domain.user.entity.UserRole;
 
 import java.time.LocalDate;
@@ -68,4 +69,9 @@ public class Project {
     @LastModifiedDate // 수정 시간 자동 설정
     @Column(name = "updatedAt")
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
 }

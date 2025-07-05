@@ -25,6 +25,9 @@ public enum ErrorStatus {
 
     CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "해당 카테고리가 없습니다."),
 
+    // 프로젝트 관련 에러
+    PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "존재하지 않는 프로젝트입니다."),
+
     GENERAL_ERROR(HttpStatus.BAD_REQUEST, "GENERAL4001", "일반 오류");
 
     private final HttpStatus status;
