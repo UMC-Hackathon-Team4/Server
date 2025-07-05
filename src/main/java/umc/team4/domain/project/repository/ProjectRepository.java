@@ -7,11 +7,15 @@ import org.springframework.stereotype.Repository;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.user.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.endDate >= CURRENT_DATE ORDER BY function('RAND')")
     List<Project> findRandomFiveProjects(Pageable pageable);
+
+    List<Project> findByEndDateAfterOrderByEndDateAsc(LocalDate today);
+
 
 }
