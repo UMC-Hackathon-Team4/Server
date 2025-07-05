@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.fund.dto.FundRequestDto;
 import umc.team4.domain.fund.dto.FundResponseDto;
 import umc.team4.domain.fund.service.FundService;
+import umc.team4.domain.jwt.JwtUtil;
 import umc.team4.domain.user.dto.UserResponseDto;
 
 @Tag(name = "Funding API", description = "프로젝트 함께하기(펀딩) 기능을 담당하는 API입니다.")
@@ -19,6 +21,7 @@ import umc.team4.domain.user.dto.UserResponseDto;
 public class FundRestController {
 
     private final FundService fundService;
+    private final JwtUtil jwtUtil;
 
     @Operation(
             summary = "프로젝트 펀딩하기",
@@ -38,11 +41,24 @@ public class FundRestController {
         - `projectAmount`: 펀딩 후 프로젝트의 총 모금액
         """
     )
-    @PostMapping
+    @PostMapping("/{fundId}")
     public ResponseEntity<ApiResponse> funding(
-            @RequestBody FundRequestDto.fundRequestdto dto
+            @PathVariable Long fundId,
+            @RequestHeader("Authorization") String authHeader
     ) {
-        FundResponseDto.fundResponseDto response = fundService.createFunding(dto);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
+
+        FundResponseDto.fundResponseDto response = fundService.createFunding(userId, fundId);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 }

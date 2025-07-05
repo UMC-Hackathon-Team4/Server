@@ -23,13 +23,13 @@ public class FundServiceImpl implements FundService {
     private final FundingRepository fundingRepository;
 
     @Override
-    public FundResponseDto.fundResponseDto createFunding(FundRequestDto.fundRequestdto requestDto) {
+    public FundResponseDto.fundResponseDto createFunding(Long userId, Long fundId) {
 
         // 해당 Id값의 유저가 없을 때 오류
-        User user = userRepository.findById(requestDto.getUserId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
-        Fund fund = fundRepository.findById(requestDto.getFundId())
+        Fund fund = fundRepository.findById(fundId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.FUND_NOT_FOUND));
 
         if (fund.getStock() <= 0) {

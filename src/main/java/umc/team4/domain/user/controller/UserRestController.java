@@ -7,9 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
+import umc.team4.domain.jwt.JwtUtil;
 import umc.team4.domain.user.dto.UserResponseDto;
 import umc.team4.domain.user.service.UserService;
+
+import java.util.Map;
 
 @Tag(name = "User API", description = "사용자 관련 기능을 담당하는 API입니다.")
 @RestController
@@ -17,6 +21,7 @@ import umc.team4.domain.user.service.UserService;
 @RequiredArgsConstructor
 public class UserRestController {
 
+    private final JwtUtil jwtUtil;
     private final UserService userService;
 
     @Operation(
@@ -39,16 +44,30 @@ public class UserRestController {
         - `createdAt`: 가입 일자 (계정 생성 시각)
         """
     )
-    @GetMapping("/info/{userId}")
+    @GetMapping("/info")
     public ResponseEntity<ApiResponse> getUserinfo(
-            @Parameter(
-                    description = "조회할 사용자 ID",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long userId
+            @RequestHeader("Authorization") String authHeader
     ) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
         UserResponseDto.userInfodto response = userService.getUserInfo(userId);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
+
+    @PostMapping("/token")
+    public ResponseEntity<?> generateToken(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        String token = jwtUtil.generateToken(userId);
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
 }
