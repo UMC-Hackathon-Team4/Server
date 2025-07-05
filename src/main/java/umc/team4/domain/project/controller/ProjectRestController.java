@@ -2,11 +2,10 @@ package umc.team4.domain.project.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import umc.team4.common.exception.GeneralException;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.service.ProjectService;
@@ -21,9 +20,17 @@ public class ProjectRestController {
     private final ProjectService projectService;
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponse> getProjectDetail(@PathVariable Long projectId) {
-        ProjectResponseDto.ProjectDetailDto response = projectService.getProjectDetail(projectId);
-        return ApiResponse.onSuccess(SuccessStatus._OK, response);
+    public ResponseEntity<ApiResponse> getProjectInfo(
+            @PathVariable Long projectId,
+            @RequestParam String type) {
+
+        return switch (type) {
+            case "detail" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectDetail(projectId));
+            case "intro" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectIntro(projectId));
+            case "story" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectStory(projectId));
+            case "reward" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectRewards(projectId));
+            default -> throw new GeneralException(ErrorStatus.INVALID_PROJECT_TYPE);
+        };
     }
 
     @GetMapping("/best")

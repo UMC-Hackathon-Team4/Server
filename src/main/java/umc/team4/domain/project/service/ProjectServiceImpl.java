@@ -5,6 +5,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import umc.team4.common.exception.GeneralException;
 import umc.team4.common.status.ErrorStatus;
+import umc.team4.domain.fund.entity.Fund;
+import umc.team4.domain.fund.repository.FundRepository;
 import umc.team4.domain.funding.repository.FundingRepository;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Project;
@@ -21,14 +23,27 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final FundingRepository fundingRepository;
 
+    private Project findProject(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PROJECT_NOT_FOUND));
+    }
+
+    @Override
+    public ProjectResponseDto.ProjectIntroDto getProjectIntro(Long projectId) {
+        Project project = findProject(projectId);
+        return new ProjectResponseDto.ProjectIntroDto(project.getProjectId(), project.getSummary());
+    }
+
+    @Override
+    public ProjectResponseDto.ProjectStoryDto getProjectStory(Long projectId) {
+        Project project = findProject(projectId);
+        return new ProjectResponseDto.ProjectStoryDto(project.getProjectId(), project.getStory());
+    }
+
     @Override
     public ProjectResponseDto.ProjectDetailDto getProjectDetail(Long projectId) {
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PROJECT_NOT_FOUND));
-
+        Project project = findProject(projectId);
         User creator = project.getUser();
-
         Long supportersCount = fundingRepository.countByProjectId(projectId);
 
         return ProjectResponseDto.ProjectDetailDto.builder()
@@ -44,6 +59,26 @@ public class ProjectServiceImpl implements ProjectService {
                 .creatorNickname(creator.getNickname())
                 .supportersCount(supportersCount)
                 .build();
+    }
+
+    @Override
+    public ProjectResponseDto.ProjectRewardDto getProjectRewards(Long projectId) {
+        List<Fund> funds = fundingRepository.findFundsByProjectId(projectId);
+
+        if (funds == null || funds.isEmpty()) {
+            throw new GeneralException(ErrorStatus.FUND_NOT_FOUND_FOR_PROJECT);
+        }
+
+        List<ProjectResponseDto.RewardDto> rewards = funds.stream()
+                .map(fund -> new ProjectResponseDto.RewardDto(
+                        fund.getFundId(),
+                        fund.getTitle(),
+                        fund.getDescription(),
+                        fund.getPrice()
+                ))
+                .toList();
+
+        return new ProjectResponseDto.ProjectRewardDto(projectId, rewards);
     }
 
     @Override
