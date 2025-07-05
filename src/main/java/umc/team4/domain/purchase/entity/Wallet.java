@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import umc.team4.domain.user.entity.MemberRole;
+import umc.team4.domain.user.entity.UserRole;
 import umc.team4.domain.user.entity.User;
 
 import java.time.LocalDateTime;

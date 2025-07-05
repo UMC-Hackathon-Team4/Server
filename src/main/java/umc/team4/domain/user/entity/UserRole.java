@@ -1,5 +1,5 @@
 package umc.team4.domain.user.entity;
 
-public enum MemberRole {
+public enum UserRole {
     USER, ARTIST, ADMIN
 }

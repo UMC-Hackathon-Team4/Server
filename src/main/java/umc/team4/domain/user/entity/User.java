@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "Member", indexes = {
+@Table(name = "User", indexes = {
         @Index(name = "idx_member_email", columnList = "email")
 })
 @Builder
@@ -49,7 +49,7 @@ public class User {
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    private MemberRole role;
+    private UserRole role;
 
     @Column(name = "disability_type", length = 20)
     private String disabilityType;
