@@ -2,6 +2,7 @@ package umc.team4.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +29,7 @@ public class UserRestController {
 
     @Operation(
             summary = "사용자 개인정보 조회",
+            security = @SecurityRequirement(name = "bearerAuth"),
             description = """
         특정 사용자의 개인정보를 조회합니다.
 

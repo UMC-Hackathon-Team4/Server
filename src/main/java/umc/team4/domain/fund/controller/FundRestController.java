@@ -1,6 +1,7 @@
 package umc.team4.domain.fund.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class FundRestController {
 
     @Operation(
             summary = "프로젝트 펀딩하기",
+            security = @SecurityRequirement(name = "bearerAuth"),
             description = """
         사용자가 특정 프로젝트의 리워드에 펀딩을 진행합니다.
 

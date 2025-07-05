@@ -213,6 +213,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .summary(dto.getSummary())
                 .description(dto.getDescription())
                 .story(dto.getStory())
+                .supportersCount(0L)
                 .imageUrl(dto.getImageUrl())
                 .build();
 
