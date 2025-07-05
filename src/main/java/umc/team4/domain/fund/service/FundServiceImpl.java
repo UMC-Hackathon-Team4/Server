@@ -57,6 +57,8 @@ public class FundServiceImpl implements FundService {
                 .fund(fund)
                 .build();
 
+        fundingRepository.save(funding);
+
         return FundResponseDto.fundResponseDto.builder()
                 .userId(user.getUserId())
                 .projectId(project.getProjectId())
