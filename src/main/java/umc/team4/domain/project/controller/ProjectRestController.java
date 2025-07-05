@@ -11,6 +11,8 @@ import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.service.ProjectService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/projects")
@@ -23,4 +25,11 @@ public class ProjectRestController {
         ProjectResponseDto.ProjectDetailDto response = projectService.getProjectDetail(projectId);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
+
+    @GetMapping("/best")
+    public ResponseEntity<ApiResponse> getRandomProjects() {
+        List<ProjectResponseDto.ProjectSummaryDto> response = projectService.getRandomProjects();
+        return ApiResponse.onSuccess(SuccessStatus._OK, response);
+    }
+
 }

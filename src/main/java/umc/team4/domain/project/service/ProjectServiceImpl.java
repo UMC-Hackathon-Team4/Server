@@ -1,6 +1,7 @@
 package umc.team4.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import umc.team4.common.exception.GeneralException;
 import umc.team4.common.status.ErrorStatus;
@@ -9,6 +10,9 @@ import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.project.repository.ProjectRepository;
 import umc.team4.domain.user.entity.User;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +44,27 @@ public class ProjectServiceImpl implements ProjectService {
                 .creatorNickname(creator.getNickname())
                 .supportersCount(supportersCount)
                 .build();
+    }
+
+    @Override
+    public List<ProjectResponseDto.ProjectSummaryDto> getRandomProjects() {
+        List<Project> projects = projectRepository.findRandomFiveProjects(PageRequest.of(0, 5));
+
+        if (projects.isEmpty()) {
+            throw new GeneralException(ErrorStatus.NO_PROJECTS_AVAILABLE);
+        }
+
+
+        return projects.stream()
+                .map(p -> ProjectResponseDto.ProjectSummaryDto.builder()
+                        .projectId(p.getProjectId())
+                        .projectTitle(p.getTitle())
+                        .imageUrl(p.getImageUrl())
+                        .category(p.getCategory().name())
+                        .currentAmount(p.getCurrentAmount())
+                        .targetAmount(p.getTargetAmount())
+                        .endDate(p.getEndDate())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
