@@ -32,6 +32,8 @@ public enum ErrorStatus {
 
     // 프로젝트 관련 에러
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "존재하지 않는 프로젝트입니다."),
+    NO_PROJECTS_AVAILABLE(HttpStatus.NOT_FOUND, "PROJECT4002", "추천할 프로젝트가 없습니다."),
+
 
     GENERAL_ERROR(HttpStatus.BAD_REQUEST, "GENERAL4001", "일반 오류");
 
