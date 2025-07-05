@@ -12,7 +12,7 @@ import umc.team4.common.status.SuccessStatus;
 @Getter
 @RequiredArgsConstructor
 @JsonPropertyOrder({"isSuccess", "code", "message", "pageInfo", "result"})
-public class ApiResponse {
+public class BaseResponse {
     private final Boolean isSuccess;
     private final String code;
     private final String message;
@@ -24,25 +24,25 @@ public class ApiResponse {
     private final Object result;
 
     // 성공한 경우 응답 생성
-    public static ResponseEntity<ApiResponse> onSuccess(SuccessStatus status, PageInfo pageInfo, Object result) {
+    public static ResponseEntity<BaseResponse> onSuccess(SuccessStatus status, PageInfo pageInfo, Object result) {
         return new ResponseEntity<>(
-                new ApiResponse(true, status.getCode(), status.getMessage(), pageInfo, result),
+                new BaseResponse(true, status.getCode(), status.getMessage(), pageInfo, result),
                 status.getStatus()
         );
     }
 
     // 성공 - 기본 응답
-    public static ResponseEntity<ApiResponse> onSuccess(SuccessStatus status) {
+    public static ResponseEntity<BaseResponse> onSuccess(SuccessStatus status) {
         return onSuccess(status, null, null);
     }
 
     // 성공 - 데이터 포함
-    public static ResponseEntity<ApiResponse> onSuccess(SuccessStatus status, Object result) {
+    public static ResponseEntity<BaseResponse> onSuccess(SuccessStatus status, Object result) {
         return onSuccess(status, null, result);
     }
 
     // 성공 - 페이지네이션 포함
-    public static ResponseEntity<ApiResponse> onSuccess(SuccessStatus status, Page<?> page) {
+    public static ResponseEntity<BaseResponse> onSuccess(SuccessStatus status, Page<?> page) {
         PageInfo pageInfo = new PageInfo(page.getNumber(), page.getSize(), page.hasNext(), page.getTotalElements(),
                 page.getTotalPages());
         return onSuccess(status, pageInfo, page.getContent());
@@ -50,13 +50,13 @@ public class ApiResponse {
 
 
     // 실패한 경우 응답 생성
-    public static ResponseEntity<ApiResponse> onFailure(ErrorStatus error) {
+    public static ResponseEntity<BaseResponse> onFailure(ErrorStatus error) {
         return new ResponseEntity<>(
-                new ApiResponse(false, error.getCode(), error.getMessage(), null, null), error.getStatus());
+                new BaseResponse(false, error.getCode(), error.getMessage(), null, null), error.getStatus());
     }
 
-    public static ResponseEntity<ApiResponse> onFailure(ErrorStatus error, String message) {
-        return new ResponseEntity<>(new ApiResponse(false, error.getCode(), error.getMessage(message), null, null), error.getStatus());
+    public static ResponseEntity<BaseResponse> onFailure(ErrorStatus error, String message) {
+        return new ResponseEntity<>(new BaseResponse(false, error.getCode(), error.getMessage(message), null, null), error.getStatus());
     }
 
 }

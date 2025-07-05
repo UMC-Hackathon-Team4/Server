@@ -2,6 +2,9 @@ package umc.team4.domain.project.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -9,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.team4.common.exception.GeneralException;
-import umc.team4.common.response.ApiResponse;
+import umc.team4.common.response.BaseResponse;
 import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.jwt.JwtUtil;
@@ -58,8 +61,12 @@ public class ProjectRestController {
         - `endDate`: 프로젝트 종료일 (yyyy-MM-dd)
     """
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "COMMON200", description = "SUCCESS!"),
+            @ApiResponse(responseCode = "PROJECT4001", description = "존재하지 않는 프로젝트입니다."),
+    })
     @GetMapping("/lists")
-    public ResponseEntity<ApiResponse> getProjectsListByCategory(
+    public ResponseEntity<BaseResponse> getProjectsListByCategory(
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0", required = false)
             @RequestParam(defaultValue = "0") int page,
 
@@ -119,8 +126,13 @@ public class ProjectRestController {
         - `price`: 가격
     """
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "COMMON200", description = "SUCCESS!"),
+            @ApiResponse(responseCode = "PROJECT4001", description = "존재하지 않는 프로젝트입니다."),
+            @ApiResponse(responseCode = "PROJECT4003", description = "유효하지 않은 type입니다. [detail, intro, story, reward] 중 하나여야 합니다."),
+    })
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponse> getProjectInfo(
+    public ResponseEntity<BaseResponse> getProjectInfo(
             @Parameter(description = "조회할 프로젝트 ID", example = "1", required = true)
             @PathVariable Long projectId,
 
@@ -128,10 +140,10 @@ public class ProjectRestController {
             @RequestParam String type) {
 
         return switch (type) {
-            case "detail" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectDetail(projectId));
-            case "intro" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectIntro(projectId));
-            case "story" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectStory(projectId));
-            case "reward" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectRewards(projectId));
+            case "detail" -> BaseResponse.onSuccess(SuccessStatus._OK, projectService.getProjectDetail(projectId));
+            case "intro" -> BaseResponse.onSuccess(SuccessStatus._OK, projectService.getProjectIntro(projectId));
+            case "story" -> BaseResponse.onSuccess(SuccessStatus._OK, projectService.getProjectStory(projectId));
+            case "reward" -> BaseResponse.onSuccess(SuccessStatus._OK, projectService.getProjectRewards(projectId));
             default -> throw new GeneralException(ErrorStatus.INVALID_PROJECT_TYPE);
         };
     }
@@ -157,10 +169,15 @@ public class ProjectRestController {
     - `endDate`: 프로젝트 마감일
     """
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "COMMON200", description = "SUCCESS!"),
+            @ApiResponse(responseCode = "PROJECT4001", description = "존재하지 않는 프로젝트입니다."),
+            @ApiResponse(responseCode = "PROJECT4002", description = "추천할 프로젝트가 없습니다."),
+    })
     @GetMapping("/best")
-    public ResponseEntity<ApiResponse> getRandomProjects() {
+    public ResponseEntity<BaseResponse> getRandomProjects() {
         List<ProjectResponseDto.ProjectSummaryDto> response = projectService.getRandomProjects();
-        return ApiResponse.onSuccess(SuccessStatus._OK, response);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
     @Operation(
@@ -184,15 +201,21 @@ public class ProjectRestController {
     - `endDate`: 마감일
     """
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "COMMON200", description = "SUCCESS!"),
+            @ApiResponse(responseCode = "PROJECT4001", description = "존재하지 않는 프로젝트입니다."),
+            @ApiResponse(responseCode = "PROJECT4005", description = "이미 마감된 프로젝트입니다."),
+    })
     @GetMapping("/deadline")
-    public ResponseEntity<ApiResponse> getDeadlineProjects() {
+    public ResponseEntity<BaseResponse> getDeadlineProjects() {
         List<ProjectResponseDto.ProjectSummaryDto> result = projectService.getDeadlineProjects();
-        return ApiResponse.onSuccess(SuccessStatus._OK, result);
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     @PostMapping
     @Operation(
             summary = "프로젝트 등록하기",
+            security = @SecurityRequirement(name = "bearerAuth"),
             description = """
     프로젝트 정보, 스토리 작성, 리워드 설정을 포함하여 새로운 프로젝트를 등록합니다.
 
@@ -224,23 +247,28 @@ public class ProjectRestController {
     - `endDate`: 프로젝트 마감일
     """
     )
-    public ResponseEntity<ApiResponse> createProject(
+    @ApiResponses({
+            @ApiResponse(responseCode = "COMMON200", description = "SUCCESS!"),
+            @ApiResponse(responseCode = "PROJECT5001", description = "프로젝트 등록에 실패했습니다."),
+            @ApiResponse(responseCode = "PROJECT4006", description = "프로젝트 시작일은 종료일 이전이어야 합니다."),
+    })
+    public ResponseEntity<BaseResponse> createProject(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody ProjectRequestDto.Create dto) {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
+            return BaseResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
         }
 
         String token = authHeader.substring(7);
         if (!jwtUtil.validateToken(token)) {
-            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
+            return BaseResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
         }
 
         Long userId = jwtUtil.extractUserId(token);
 
         ProjectResponseDto.ProjectCreate response = projectService.createProject(dto, userId);
-        return ApiResponse.onSuccess(SuccessStatus._OK, response);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
 }
