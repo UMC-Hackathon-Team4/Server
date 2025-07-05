@@ -25,9 +25,13 @@ public enum ErrorStatus {
 
     CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "해당 카테고리가 없습니다."),
 
+    // 펀드 관련 에러
     FUND_NOT_FOUND(HttpStatus.BAD_REQUEST, "FUND4001", "해당 아이디의 펀드가 없습니다."),
     FUND_STOCK_EMPTY(HttpStatus.BAD_REQUEST, "FUND4002", "해당 펀드의 남아있는 재고가 없습니다."),
     INSUFFICIENT_USER_COIN(HttpStatus.BAD_REQUEST, "FUND4003", "해당 펀드를 사기 위한 유저의 코인이 부족합니다."),
+
+    // 프로젝트 관련 에러
+    PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "존재하지 않는 프로젝트입니다."),
 
     GENERAL_ERROR(HttpStatus.BAD_REQUEST, "GENERAL4001", "일반 오류");
 
