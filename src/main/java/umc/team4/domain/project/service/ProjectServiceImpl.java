@@ -92,7 +92,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(fund -> new ProjectResponseDto.RewardDto(
                         fund.getFundId(),
                         fund.getTitle(),
-                        fund.getDescription(),
+                        fund.getStock(),
                         fund.getPrice()
                 ))
                 .toList();
@@ -208,14 +208,19 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(r -> Fund.builder()
                         .project(project)
                         .title(r.getTitle())
-                        .description(r.getDescription())
                         .price(r.getPrice())
                         .stock(r.getStock())
                         .build())
                 .toList();
 
         fundRepository.saveAll(funds);
-        return null;
+
+        return ProjectResponseDto.ProjectCreate.builder()
+                .projectId(project.getProjectId())
+                .title(project.getTitle())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .build();
     }
 
 }

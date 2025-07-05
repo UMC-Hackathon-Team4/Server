@@ -52,8 +52,8 @@ public class ProjectResponseDto {
     public static class RewardDto {
         private Long fundId;
         private String title;
-        private String description;
         private Long price;
+        private Long stock;
     }
 
     @Getter
