@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import umc.team4.common.exception.GeneralException;
-import umc.team4.common.response.ApiResponse;
+import umc.team4.common.response.BaseResponse;
 import umc.team4.common.response.PageInfo;
 import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
@@ -131,7 +131,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable) {
+    public ResponseEntity<BaseResponse> getListByCategory(Category category, Pageable pageable) {
 
         Page<Project> projectPage = projectRepository.findByCategory(category, pageable);
 
@@ -158,7 +158,7 @@ public class ProjectServiceImpl implements ProjectService {
                  })
                 .collect(Collectors.toList());
 
-        return ApiResponse.onSuccess(SuccessStatus._OK, pageInfo, projects);
+        return BaseResponse.onSuccess(SuccessStatus._OK, pageInfo, projects);
     }
 
     @Override
