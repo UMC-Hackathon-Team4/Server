@@ -1,4 +1,4 @@
-name: team 4 Server CI/CD
+name: team4 Server CI/CD
 
 on:
   push:
@@ -20,22 +20,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-
-      # 3️⃣ application.properties 생성 (GitHub Secrets 사용)
-      - name: Create resources directory
-        run: mkdir -p Server/src/main/resources
-
+      # 3️⃣ application.properties 생성
       - name: Create application.properties
         run: |
-          cat <<EOF > Server/src/main/resources/application.properties
+          mkdir -p src/main/resources
+          cat <<EOF > src/main/resources/application.properties
           spring.application.name=team4
-          
+
           # DB
           spring.datasource.url=${{ secrets.RDS_URL }}
           spring.datasource.username=${{ secrets.RDS_USERNAME }}
           spring.datasource.password=${{ secrets.RDS_PASSWORD }}
           spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-          
+
           # JPA
           spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
           spring.jpa.hibernate.ddl-auto=update
@@ -45,29 +42,19 @@ jobs:
 
       # 4️⃣ Gradle 빌드
       - name: Grant execute permission for gradlew
-        run: chmod +x Server/gradlew
+        run: chmod +x ./gradlew
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
-          build-root-directory: Server
 
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@v0.1.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/*.jar"
-          target: "/home/ubuntu"
-
-      # 5️⃣ 빌드된 JAR 파일 업로드 (GitHub Actions에서 사용할 수 있도록 저장)
+      # 5️⃣ 빌드된 JAR 파일 업로드
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: team4-Server
-          path: Server/build/libs/*.jar
+          path: build/libs/*.jar
 
       # 6️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
       - name: Upload Test Results
@@ -75,54 +62,50 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: Server/build/reports/tests/test/
+          path: build/reports/tests/test/
 
-  # 7️⃣ EC2 배포
   deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
-      # 8️⃣ 빌드된 JAR 파일 다운로드
+      # 7️⃣ 빌드된 JAR 파일 다운로드
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: team4-Server
           path: build/libs/
 
-      # 9️⃣ EC2에 배포
+      # 8️⃣ EC2에 배포
       - name: Deploy to EC2
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          RDS_URL: ${{ secrets.RDS_URL }}
-          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
-          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
 
         run: |
           echo "$EC2_SSH_KEY" > team4.pem
           chmod 600 team4.pem
-          
+
           # SSH 접속 테스트
           ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo '✅ Connected successfully'"
-          
+
           # JAR 파일 찾기
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           echo "JAR 파일 경로: $jar_file"
-          
-          # EC2에 JAR 파일 전송
+
+          # EC2에 전송
           scp -i team4.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/team4-Server.jar
-          
-          # EC2에서 실행 중인 서버 종료 및 새 JAR 실행
+
+          # EC2에서 기존 프로세스 종료 및 서버 실행
           ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
             echo "🔄 기존 프로세스 종료 중..."
             pkill -f 'java -jar' || echo "No process to kill"
-          
+
             echo "🚀 새로운 서버 실행 중..."
             nohup java -jar /home/$EC2_USERNAME/team4-Server.jar > /home/$EC2_USERNAME/app.log 2>&1 &
             echo "✅ 배포 완료"
           EOF
-          
+
           # SSH 키 삭제
           rm -f team4.pem
