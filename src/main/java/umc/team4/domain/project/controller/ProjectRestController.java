@@ -18,6 +18,7 @@ import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.service.ProjectService;
 
 import java.util.List;
+
 @Tag(name = "Project API", description = "프로젝트 등록, 조회 기능을 담당하는 API입니다.")
 @RestController
 @RequiredArgsConstructor
