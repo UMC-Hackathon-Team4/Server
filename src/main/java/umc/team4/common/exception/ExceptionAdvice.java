@@ -10,52 +10,52 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import umc.team4.common.response.ApiResponse;
+import umc.team4.common.response.BaseResponse;
 import umc.team4.common.status.ErrorStatus;
 
 @Slf4j
 @RestControllerAdvice
 public class ExceptionAdvice {
     @ExceptionHandler
-    public ResponseEntity<ApiResponse> validation(ConstraintViolationException e) {
+    public ResponseEntity<BaseResponse> validation(ConstraintViolationException e) {
         String errorMessage = e.getConstraintViolations().stream()
                 .map(constraintViolation -> constraintViolation.getMessage())
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("ConstraintViolationException 추출 도중 에러 발생"));
 
-        return ApiResponse.onFailure(ErrorStatus.VALIDATION_ERROR, errorMessage);
+        return BaseResponse.onFailure(ErrorStatus.VALIDATION_ERROR, errorMessage);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<BaseResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         e.printStackTrace();
 
         String errorMessage = e.getBindingResult().getFieldError().getDefaultMessage();
-        return ApiResponse.onFailure(ErrorStatus.VALIDATION_ERROR, errorMessage);
+        return BaseResponse.onFailure(ErrorStatus.VALIDATION_ERROR, errorMessage);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiResponse> handleNoResourceFoundException(NoResourceFoundException e) {
+    public ResponseEntity<BaseResponse> handleNoResourceFoundException(NoResourceFoundException e) {
         e.printStackTrace();
 
-        return ApiResponse.onFailure(ErrorStatus._NOT_FOUND);
+        return BaseResponse.onFailure(ErrorStatus._NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse> handleException(Exception e) {
+    public ResponseEntity<BaseResponse> handleException(Exception e) {
         log.error("Unhandled Exception: ", e);
-        return ApiResponse.onFailure((ErrorStatus._INTERNAL_SERVER_ERROR));
+        return BaseResponse.onFailure((ErrorStatus._INTERNAL_SERVER_ERROR));
     }
 
     @ExceptionHandler(GeneralException.class)
-    public ResponseEntity<ApiResponse> handleGeneralException(GeneralException e) {
+    public ResponseEntity<BaseResponse> handleGeneralException(GeneralException e) {
         e.printStackTrace();
 
-        return ApiResponse.onFailure(e.getErrorStatus(), e.getMessage());
+        return BaseResponse.onFailure(e.getErrorStatus(), e.getMessage());
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, ConversionFailedException.class})
-    public ResponseEntity<ApiResponse> handleConversionFailedException(Exception e) {
-        return ApiResponse.onFailure((ErrorStatus._BAD_REQUEST));
+    public ResponseEntity<BaseResponse> handleConversionFailedException(Exception e) {
+        return BaseResponse.onFailure((ErrorStatus._BAD_REQUEST));
     }
 }
