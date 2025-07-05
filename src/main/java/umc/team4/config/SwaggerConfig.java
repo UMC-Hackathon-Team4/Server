@@ -13,23 +13,19 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        Server productionServer = new Server()
-                .url("http://togetherumc.kro.kr:8080")
-                .description("배포 서버");
-
         return new OpenAPI()
-                .servers(List.of(productionServer))
                 .info(new Info()
                         .title("함:께 - 장애인 창작자 프로젝트 플랫폼 API")
                         .description("""
-                                장애인과 비장애인이 함께하는 창작 프로젝트 플랫폼 '함:께'의 OpenAPI 문서입니다.
+                        장애인과 비장애인이 함께하는 창작 프로젝트 플랫폼 '함:께'의 OpenAPI 문서입니다.
 
-                                ✅ 주요 기능:
-                                - 프로젝트 등록
-                                - 전체/카테고리별 프로젝트 조회
-                                - 프로젝트 상세 조회
-                                - 함께하기(펀딩하기)
-                                """)
+                        ✅ 주요 기능:
+                        - 프로젝트 등록
+                        - 전체/카테고리별 프로젝트 조회
+                        - 프로젝트 상세 조회
+                        - 함께하기(펀딩하기)
+
+                        """)
                         .version("1.0.0"));
     }
 
