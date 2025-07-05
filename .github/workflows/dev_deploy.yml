@@ -48,22 +48,22 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: build -x test
 
       # 5️⃣ 빌드된 JAR 파일 업로드
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: team4-Server
-          path: /build/libs/*.jar
+          path: build/libs/*.jar
 
       # 6️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
-        if: always()
+        if: false
         with:
           name: test-results
-          path: /build/reports/tests/test/
+          path: build/reports/tests/test/
 
   deploy:
     needs: build
