@@ -35,6 +35,10 @@ public enum ErrorStatus {
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "존재하지 않는 프로젝트입니다."),
     NO_PROJECTS_AVAILABLE(HttpStatus.NOT_FOUND, "PROJECT4002", "추천할 프로젝트가 없습니다."),
     INVALID_PROJECT_TYPE(HttpStatus.BAD_REQUEST, "PROJECT4003", "유효하지 않은 type입니다. [detail, intro, story, reward] 중 하나여야 합니다."),
+    INVALID_TARGET_AMOUNT(HttpStatus.BAD_REQUEST, "PROJECT4004", "프로젝트의 목표 금액이 0원일 수 없습니다."),
+    PROJECT_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "PROJECT4005", "이미 마감된 프로젝트입니다."),
+    PROJECT_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"PROJECT5001","프로젝트 등록에 실패했습니다."),
+    INVALID_PROJECT_DATE_RANGE(HttpStatus.BAD_REQUEST, "PROJECT4006", "프로젝트 시작일은 종료일 이전이어야 합니다."),
 
     GENERAL_ERROR(HttpStatus.BAD_REQUEST, "GENERAL4001", "일반 오류");
 
