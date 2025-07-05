@@ -124,7 +124,7 @@ public class ProjectServiceImpl implements ProjectService {
                             .currentAmount(project.getCurrentAmount())
                             .targetAmount(project.getTargetAmount())
                             .supportersCount(project.getSupportersCount())
-                            .percentage(percentage + "%")
+                            .percentage(percentage)
                             .build();
                 })
                 .collect(Collectors.toList());
