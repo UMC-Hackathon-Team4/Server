@@ -59,6 +59,11 @@ public class ProjectServiceImpl implements ProjectService {
         User creator = project.getUser();
         Long supportersCount = fundingRepository.countByProjectId(projectId);
 
+        double percentageDouble = project.getTargetAmount() == 0 ? 0.0 :
+                (double) project.getCurrentAmount() / project.getTargetAmount() * 100;
+
+        String percentage = String.format("%.1f%%", percentageDouble);
+
         return ProjectResponseDto.ProjectDetailDto.builder()
                 .projectId(project.getProjectId())
                 .projectTitle(project.getTitle())
@@ -71,6 +76,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .creatorDetail(creator.getDetail())
                 .creatorNickname(creator.getNickname())
                 .supportersCount(supportersCount)
+                .percentage(percentage)
                 .build();
     }
 
