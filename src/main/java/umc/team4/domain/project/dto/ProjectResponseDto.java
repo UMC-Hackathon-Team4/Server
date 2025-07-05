@@ -23,6 +23,7 @@ public class ProjectResponseDto {
         private String creatorDetail;
         private String creatorNickname;
         private Long supportersCount;
+        private String percentage;
     }
 
     @Getter
