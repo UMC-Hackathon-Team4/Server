@@ -29,11 +29,12 @@ public enum ErrorStatus {
     FUND_NOT_FOUND(HttpStatus.BAD_REQUEST, "FUND4001", "해당 아이디의 펀드가 없습니다."),
     FUND_STOCK_EMPTY(HttpStatus.BAD_REQUEST, "FUND4002", "해당 펀드의 남아있는 재고가 없습니다."),
     INSUFFICIENT_USER_COIN(HttpStatus.BAD_REQUEST, "FUND4003", "해당 펀드를 사기 위한 유저의 코인이 부족합니다."),
+    FUND_NOT_FOUND_FOR_PROJECT(HttpStatus.NOT_FOUND, "FUND4004", "해당 프로젝트에 등록된 리워드가 없습니다."),
 
     // 프로젝트 관련 에러
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT4001", "존재하지 않는 프로젝트입니다."),
     NO_PROJECTS_AVAILABLE(HttpStatus.NOT_FOUND, "PROJECT4002", "추천할 프로젝트가 없습니다."),
-
+    INVALID_PROJECT_TYPE(HttpStatus.BAD_REQUEST, "PROJECT4003", "유효하지 않은 type입니다. [detail, intro, story, reward] 중 하나여야 합니다."),
 
     GENERAL_ERROR(HttpStatus.BAD_REQUEST, "GENERAL4001", "일반 오류");
 
