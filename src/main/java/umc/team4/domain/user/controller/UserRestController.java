@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.jwt.JwtUtil;
 import umc.team4.domain.user.dto.UserResponseDto;
@@ -43,15 +44,21 @@ public class UserRestController {
         - `createdAt`: 가입 일자 (계정 생성 시각)
         """
     )
-    @GetMapping("/info/{userId}")
+    @GetMapping("/info")
     public ResponseEntity<ApiResponse> getUserinfo(
-            @Parameter(
-                    description = "조회할 사용자 ID",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long userId
+            @RequestHeader("Authorization") String authHeader
     ) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
         UserResponseDto.userInfodto response = userService.getUserInfo(userId);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }

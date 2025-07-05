@@ -12,6 +12,7 @@ import umc.team4.common.exception.GeneralException;
 import umc.team4.common.response.ApiResponse;
 import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
+import umc.team4.domain.jwt.JwtUtil;
 import umc.team4.domain.project.dto.ProjectRequestDto;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Category;
@@ -25,6 +26,7 @@ import java.util.List;
 @RequestMapping("/projects")
 public class ProjectRestController {
 
+    private final JwtUtil jwtUtil;
     private final ProjectService projectService;
 
     @Operation(
@@ -222,8 +224,22 @@ public class ProjectRestController {
     - `endDate`: 프로젝트 마감일
     """
     )
-    public ResponseEntity<ApiResponse> createProject(@RequestBody ProjectRequestDto.Create dto) {
-        ProjectResponseDto.ProjectCreate response = projectService.createProject(dto);
+    public ResponseEntity<ApiResponse> createProject(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody ProjectRequestDto.Create dto) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 없습니다.");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return ApiResponse.onFailure(ErrorStatus._UNAUTHORIZED, "토큰이 유효하지 않습니다.");
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
+
+        ProjectResponseDto.ProjectCreate response = projectService.createProject(dto, userId);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 
