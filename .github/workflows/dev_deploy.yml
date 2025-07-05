@@ -20,39 +20,44 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3️⃣ application.properties 생성
+      # 3️⃣ application.properties 생성 (수정 완료)
       - name: Create application.properties
         run: |
           mkdir -p src/main/resources
-          echo "spring.application.name=team4" >> src/main/resources/application.properties
-          echo "spring.datasource.url=${{ secrets.RDS_URL }}" >> src/main/resources/application.properties
-          echo "spring.datasource.username=${{ secrets.RDS_USERNAME }}" >> src/main/resources/application.properties
-          echo "spring.datasource.password=${{ secrets.RDS_PASSWORD }}" >> src/main/resources/application.properties
-          echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> src/main/resources/application.properties
-          echo "spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect" >> src/main/resources/application.properties
-          echo "spring.jpa.hibernate.ddl-auto=update" >> src/main/resources/application.properties
-          echo "spring.jpa.show-sql=true" >> src/main/resources/application.properties
-          echo "spring.jpa.properties.hibernate.format_sql=true" >> src/main/resources/application.properties
+          cat <<EOF > src/main/resources/application.properties
+spring.application.name=team4
 
-          EOF
+# DB
+spring.datasource.url=${{ secrets.RDS_URL }}
+spring.datasource.username=${{ secrets.RDS_USERNAME }}
+spring.datasource.password=${{ secrets.RDS_PASSWORD }}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-      # 4️⃣ Gradle 빌드
+# JPA
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+EOF
+
+      # 4️⃣ Gradle 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      # 5️⃣ Gradle 빌드
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
 
-      # 5️⃣ 빌드된 JAR 파일 업로드
+      # 6️⃣ 빌드된 JAR 파일 업로드
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: team4-Server
           path: build/libs/*.jar
 
-      # 6️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
+      # 7️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: always()
@@ -65,43 +70,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 7️⃣ 빌드된 JAR 파일 다운로드
+      # 8️⃣ 빌드된 JAR 다운로드
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: team4-Server
           path: build/libs/
 
-      # 8️⃣ EC2에 배포
+      # 9️⃣ EC2에 배포
       - name: Deploy to EC2
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-
         run: |
           echo "$EC2_SSH_KEY" > team4.pem
           chmod 600 team4.pem
 
-          # SSH 접속 테스트
-          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo '✅ Connected successfully'"
+          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo '✅ Connected to EC2'"
 
-          # JAR 파일 찾기
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          echo "JAR 파일 경로: $jar_file"
+          echo "🚀 JAR 파일: $jar_file"
 
-          # EC2에 전송
           scp -i team4.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/team4-Server.jar
 
-          # EC2에서 기존 프로세스 종료 및 서버 실행
           ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
-            echo "🔄 기존 프로세스 종료 중..."
-            pkill -f 'java -jar' || echo "No process to kill"
+            echo "🛑 기존 프로세스 종료 중..."
+            pkill -f 'java -jar' || echo "No process running"
 
-            echo "🚀 새로운 서버 실행 중..."
+            echo "🚀 새 서버 실행 중..."
             nohup java -jar /home/$EC2_USERNAME/team4-Server.jar > /home/$EC2_USERNAME/app.log 2>&1 &
             echo "✅ 배포 완료"
-          EOF
+EOF
 
-          # SSH 키 삭제
           rm -f team4.pem
