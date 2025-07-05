@@ -1,11 +1,8 @@
 package umc.team4.domain.project.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import umc.team4.domain.project.entity.Category;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -68,6 +65,18 @@ public class ProjectResponseDto {
         private Long currentAmount;
         private Long targetAmount;
         private String percentage;
+        private LocalDate endDate;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ProjectCreate {
+        private Long projectId;
+        private String title;
+        private LocalDate startDate;
         private LocalDate endDate;
     }
 

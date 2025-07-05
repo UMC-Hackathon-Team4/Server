@@ -4,6 +4,7 @@ import org.apache.coyote.Response;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.domain.project.dto.ProjectRequestDto;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Category;
 
@@ -19,4 +20,5 @@ public interface ProjectService {
     ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable);
     List<ProjectResponseDto.ProjectSummaryDto> getDeadlineProjects();
 
+    ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create requestDto);
 }
