@@ -11,4 +11,5 @@ public interface ProjectService {
     ProjectResponseDto.ProjectRewardDto getProjectRewards(Long projectId);
 
     List<ProjectResponseDto.ProjectSummaryDto> getRandomProjects();
+    List<ProjectResponseDto.ProjectSummaryDto> getDeadlineProjects();
 }

@@ -13,6 +13,7 @@ import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.project.repository.ProjectRepository;
 import umc.team4.domain.user.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -102,4 +103,27 @@ public class ProjectServiceImpl implements ProjectService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<ProjectResponseDto.ProjectSummaryDto> getDeadlineProjects() {
+        LocalDate today = LocalDate.now();
+        List<Project> projects = projectRepository.findByEndDateAfterOrderByEndDateAsc(today);
+
+        if (projects.isEmpty()) {
+            throw new GeneralException(ErrorStatus.NO_PROJECTS_AVAILABLE);
+        }
+
+        return projects.stream()
+                .map(p -> ProjectResponseDto.ProjectSummaryDto.builder()
+                        .projectId(p.getProjectId())
+                        .projectTitle(p.getTitle())
+                        .imageUrl(p.getImageUrl())
+                        .category(p.getCategory().name())
+                        .currentAmount(p.getCurrentAmount())
+                        .targetAmount(p.getTargetAmount())
+                        .endDate(p.getEndDate())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
