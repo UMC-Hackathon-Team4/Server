@@ -31,6 +31,9 @@ public class Project {
     private String title;
 
     @Column
+    private String summary;
+
+    @Column
     private String description;
 
     @Column
