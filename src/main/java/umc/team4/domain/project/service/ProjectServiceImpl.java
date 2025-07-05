@@ -1,14 +1,21 @@
 package umc.team4.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import umc.team4.common.exception.GeneralException;
+import umc.team4.common.response.ApiResponse;
+import umc.team4.common.response.PageInfo;
 import umc.team4.common.status.ErrorStatus;
+import umc.team4.common.status.SuccessStatus;
 import umc.team4.domain.fund.entity.Fund;
 import umc.team4.domain.fund.repository.FundRepository;
 import umc.team4.domain.funding.repository.FundingRepository;
 import umc.team4.domain.project.dto.ProjectResponseDto;
+import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.project.repository.ProjectRepository;
 import umc.team4.domain.user.entity.User;
@@ -91,15 +98,53 @@ public class ProjectServiceImpl implements ProjectService {
 
 
         return projects.stream()
-                .map(p -> ProjectResponseDto.ProjectSummaryDto.builder()
-                        .projectId(p.getProjectId())
-                        .projectTitle(p.getTitle())
-                        .imageUrl(p.getImageUrl())
-                        .category(p.getCategory().name())
-                        .currentAmount(p.getCurrentAmount())
-                        .targetAmount(p.getTargetAmount())
-                        .endDate(p.getEndDate())
-                        .build())
+                .map(project -> {
+                    double percentageDouble = project.getTargetAmount() == 0 ? 0.0 :
+                            (double) project.getCurrentAmount() / project.getTargetAmount() * 100;
+
+                    String percentage = String.format("%.1f%%", percentageDouble);
+
+                    return ProjectResponseDto.ProjectSummaryDto.builder()
+                            .projectId(project.getProjectId())
+                            .projectTitle(project.getTitle())
+                            .imageUrl(project.getImageUrl())
+                            .endDate(project.getEndDate())
+                            .category(project.getCategory().name())
+                            .currentAmount(project.getCurrentAmount())
+                            .targetAmount(project.getTargetAmount())
+                            .percentage(percentage + "%")
+                            .build();
+                })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable) {
+        Page<Project> projectPage = projectRepository.findByCategory(category, pageable);
+
+        PageInfo pageInfo = new PageInfo(projectPage.getNumber(), projectPage.getSize(),
+                projectPage.hasNext(), projectPage.getTotalElements(), projectPage.getTotalPages());
+
+        List<ProjectResponseDto.ProjectSummaryDto> projects = projectPage.getContent().stream()
+                .map(project -> {
+                    double percentageDouble = project.getTargetAmount() == 0 ? 0.0 :
+                            (double) project.getCurrentAmount() / project.getTargetAmount() * 100;
+
+                    String percentage = String.format("%.1f%%", percentageDouble);
+
+                    return ProjectResponseDto.ProjectSummaryDto.builder()
+                            .projectId(project.getProjectId())
+                            .projectTitle(project.getTitle())
+                            .imageUrl(project.getImageUrl())
+                            .endDate(project.getEndDate())
+                            .category(project.getCategory().name())
+                            .currentAmount(project.getCurrentAmount())
+                            .targetAmount(project.getTargetAmount())
+                            .percentage(percentage)
+                            .build();
+                 })
+                .collect(Collectors.toList());
+
+        return ApiResponse.onSuccess(SuccessStatus._OK, pageInfo, projects);
     }
 }
