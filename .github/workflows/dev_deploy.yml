@@ -2,7 +2,9 @@ name: team4 Server CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+
 
 jobs:
   build:
@@ -23,16 +25,21 @@ jobs:
       # 3️⃣ application.properties 생성
       - name: Create application.properties
         run: |
-          mkdir -p src/main/resources
-          echo "spring.application.name=team4" >> src/main/resources/application.properties
-          echo "spring.datasource.url=${{ secrets.RDS_URL }}" >> src/main/resources/application.properties
-          echo "spring.datasource.username=${{ secrets.RDS_USERNAME }}" >> src/main/resources/application.properties
-          echo "spring.datasource.password=${{ secrets.RDS_PASSWORD }}" >> src/main/resources/application.properties
-          echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> src/main/resources/application.properties
-          echo "spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect" >> src/main/resources/application.properties
-          echo "spring.jpa.hibernate.ddl-auto=update" >> src/main/resources/application.properties
-          echo "spring.jpa.show-sql=true" >> src/main/resources/application.properties
-          echo "spring.jpa.properties.hibernate.format_sql=true" >> src/main/resources/application.properties
+          cat <<EOF > Server/src/main/resources/application.properties
+          spring.application.name=team4
+          
+          # DB
+          spring.datasource.url=${{ secrets.RDS_URL }}
+          spring.datasource.username=${{ secrets.RDS_USERNAME }}
+          spring.datasource.password=${{ secrets.RDS_PASSWORD }}
+          spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+          
+          # JPA
+          spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+          spring.jpa.hibernate.ddl-auto=update
+          spring.jpa.show-sql=true
+          spring.jpa.properties.hibernate.format_sql=true
+          EOF
 
       # 4️⃣ Gradle 빌드
       - name: Grant execute permission for gradlew
@@ -41,23 +48,22 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build -x test
+          arguments: build
 
       # 5️⃣ 빌드된 JAR 파일 업로드
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: team4-Server
-          path: build/libs/*.jar
+          path: Server/build/libs/*.jar
 
       # 6️⃣ 테스트 결과 업로드 (실패해도 계속 진행)
       - name: Upload Test Results
-        if: always()
-        continue-on-error: true
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: test-results
-          path: build/reports/tests/test/
+          path: Server/build/reports/tests/test/
 
   deploy:
     needs: build
@@ -77,25 +83,33 @@ jobs:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          RDS_URL: ${{ secrets.RDS_URL }}
+          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
 
         run: |
           echo "$EC2_SSH_KEY" > team4.pem
           chmod 600 team4.pem
 
-          echo "🔒 SSH 접속 테스트"
-          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo ✅ Connected"
-      
-          jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          echo "📦 JAR 파일: $jar_file"
-      
-          echo "🚚 EC2로 전송"
-          scp -i team4.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/team4-Server.jar
-      
-          echo "🚀 서버 재시작"
-          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pkill -f 'java -jar' || echo 'No process to kill'
-            nohup java -jar /home/$EC2_USERNAME/team4-Server.jar > /home/$EC2_USERNAME/app.log 2>&1 &
-            echo ✅ 배포 완료
-          "
+          # SSH 접속 테스트
+          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo '✅ Connected successfully'"
 
+          # JAR 파일 찾기
+          jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
+          echo "JAR 파일 경로: $jar_file"
+
+          # EC2에 전송
+          scp -i team4.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/team4-Server.jar
+
+          # EC2에서 기존 프로세스 종료 및 서버 실행
+          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
+            echo "🔄 기존 프로세스 종료 중..."
+            pkill -f 'java -jar' || echo "No process to kill"
+
+            echo "🚀 새로운 서버 실행 중..."
+            nohup java -jar /home/$EC2_USERNAME/team4-Server.jar > /home/$EC2_USERNAME/app.log 2>&1 &
+            echo "✅ 배포 완료"
+          EOF
+
+          # SSH 키 삭제
           rm -f team4.pem
