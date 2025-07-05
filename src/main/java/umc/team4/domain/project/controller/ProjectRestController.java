@@ -52,6 +52,7 @@ public class ProjectRestController {
         - `currentAmount`: 현재 모금액
         - `targetAmount`: 목표 모금액
         - `percentage`: 달성률
+        - `supportersCount`: 후원자 수
         - `endDate`: 프로젝트 종료일 (yyyy-MM-dd)
     """
     )
@@ -149,6 +150,7 @@ public class ProjectRestController {
     - `category`: 프로젝트 카테고리 (PUBLISHING / ART / GOODS)
     - `currentAmount`: 현재 모금액
     - `targetAmount`: 목표 금액
+    - `supportersCount`: 후원자 수
     - `percentage`: 달성률
     - `endDate`: 프로젝트 마감일
     """
@@ -175,6 +177,7 @@ public class ProjectRestController {
     - `category`: 프로젝트 카테고리 (PUBLISHING / ART / GOODS)
     - `currentAmount`: 현재 모금액
     - `targetAmount`: 목표 금액
+    - `supportersCount`: 후원자 수
     - `percentage`: 달성률
     - `endDate`: 마감일
     """

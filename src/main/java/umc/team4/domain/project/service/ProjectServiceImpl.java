@@ -57,7 +57,6 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseDto.ProjectDetailDto getProjectDetail(Long projectId) {
         Project project = findProject(projectId);
         User creator = project.getUser();
-        Long supportersCount = fundingRepository.countByProjectId(projectId);
 
         double percentageDouble = project.getTargetAmount() == 0 ? 0.0 :
                 (double) project.getCurrentAmount() / project.getTargetAmount() * 100;
@@ -75,7 +74,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .creatorImageUrl(creator.getImageUrl())
                 .creatorDetail(creator.getDetail())
                 .creatorNickname(creator.getNickname())
-                .supportersCount(supportersCount)
+                .supportersCount(project.getSupportersCount())
                 .percentage(percentage)
                 .build();
     }
@@ -124,6 +123,7 @@ public class ProjectServiceImpl implements ProjectService {
                             .category(project.getCategory().name())
                             .currentAmount(project.getCurrentAmount())
                             .targetAmount(project.getTargetAmount())
+                            .supportersCount(project.getSupportersCount())
                             .percentage(percentage + "%")
                             .build();
                 })
@@ -152,6 +152,7 @@ public class ProjectServiceImpl implements ProjectService {
                             .category(project.getCategory().name())
                             .currentAmount(project.getCurrentAmount())
                             .targetAmount(project.getTargetAmount())
+                            .supportersCount(project.getSupportersCount())
                             .percentage(percentage)
                             .build();
                  })
@@ -177,6 +178,7 @@ public class ProjectServiceImpl implements ProjectService {
                         .category(p.getCategory().name())
                         .currentAmount(p.getCurrentAmount())
                         .targetAmount(p.getTargetAmount())
+                        .supportersCount(p.getSupportersCount())
                         .endDate(p.getEndDate())
                         .build())
                 .collect(Collectors.toList());

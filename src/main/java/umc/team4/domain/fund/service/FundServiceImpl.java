@@ -44,6 +44,9 @@ public class FundServiceImpl implements FundService {
         Project project = fund.getProject();
         project.setCurrentAmount(project.getCurrentAmount() + fund.getPrice());
 
+        // 후원자 수 증가
+        project.setSupportersCount(project.getSupportersCount() + 1);
+
         // 유저 코인 갱신
         user.setCoin(user.getCoin() - fund.getPrice());
 
