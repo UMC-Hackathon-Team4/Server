@@ -1,15 +1,21 @@
 package umc.team4.domain.project.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import umc.team4.common.exception.GeneralException;
 import umc.team4.common.response.ApiResponse;
+import umc.team4.common.status.ErrorStatus;
 import umc.team4.common.status.SuccessStatus;
+import umc.team4.domain.project.dto.ProjectRequestDto;
 import umc.team4.domain.project.dto.ProjectResponseDto;
+import umc.team4.domain.project.entity.Category;
 import umc.team4.domain.project.service.ProjectService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,9 +24,48 @@ public class ProjectRestController {
 
     private final ProjectService projectService;
 
+    @GetMapping("/lists")
+    public ResponseEntity<ApiResponse> getProjectsListByCategory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam Category category
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return projectService.getListByCategory(category, pageable);
+    }
+
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponse> getProjectDetail(@PathVariable Long projectId) {
-        ProjectResponseDto.ProjectDetailDto response = projectService.getProjectDetail(projectId);
+    public ResponseEntity<ApiResponse> getProjectInfo(
+            @PathVariable Long projectId,
+            @RequestParam String type) {
+
+        return switch (type) {
+            case "detail" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectDetail(projectId));
+            case "intro" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectIntro(projectId));
+            case "story" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectStory(projectId));
+            case "reward" -> ApiResponse.onSuccess(SuccessStatus._OK, projectService.getProjectRewards(projectId));
+            default -> throw new GeneralException(ErrorStatus.INVALID_PROJECT_TYPE);
+        };
+    }
+
+    @GetMapping("/best")
+    public ResponseEntity<ApiResponse> getRandomProjects() {
+        List<ProjectResponseDto.ProjectSummaryDto> response = projectService.getRandomProjects();
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
+
+    @Operation(summary = "마감 임박 프로젝트 전체 조회", description = "오늘 이후 마감되는 모든 프로젝트를 마감일 오름차순으로 조회합니다.")
+    @GetMapping("/deadline")
+    public ResponseEntity<ApiResponse> getDeadlineProjects() {
+        List<ProjectResponseDto.ProjectSummaryDto> result = projectService.getDeadlineProjects();
+        return ApiResponse.onSuccess(SuccessStatus._OK, result);
+    }
+
+
+    @PostMapping
+    public ResponseEntity<ApiResponse> createProject(@RequestBody ProjectRequestDto.Create dto) {
+        ProjectResponseDto.ProjectCreate response = projectService.createProject(dto);
+        return ApiResponse.onSuccess(SuccessStatus._OK, response);
+    }
+
 }

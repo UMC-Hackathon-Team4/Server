@@ -9,9 +9,8 @@ import umc.team4.domain.fund.dto.FundResponseDto;
 import umc.team4.domain.fund.entity.Fund;
 import umc.team4.domain.fund.entity.Funding;
 import umc.team4.domain.fund.repository.FundRepository;
-import umc.team4.domain.fund.repository.FundingRepository;
+import umc.team4.domain.funding.repository.FundingRepository;
 import umc.team4.domain.project.entity.Project;
-import umc.team4.domain.user.dto.UserResponseDto;
 import umc.team4.domain.user.entity.User;
 import umc.team4.domain.user.repository.UserRepository;
 
