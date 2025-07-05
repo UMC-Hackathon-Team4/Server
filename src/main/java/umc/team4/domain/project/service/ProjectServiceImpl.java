@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import umc.team4.common.exception.GeneralException;
 import umc.team4.common.status.ErrorStatus;
-import umc.team4.domain.fund.repository.FundingRepository;
+import umc.team4.domain.funding.repository.FundingRepository;
 import umc.team4.domain.project.dto.ProjectResponseDto;
 import umc.team4.domain.project.entity.Project;
 import umc.team4.domain.project.repository.ProjectRepository;

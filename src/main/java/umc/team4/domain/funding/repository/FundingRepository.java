@@ -1,4 +1,4 @@
-package umc.team4.domain.fund.repository;
+package umc.team4.domain.funding.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
