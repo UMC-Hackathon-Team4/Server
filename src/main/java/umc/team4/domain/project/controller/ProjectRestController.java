@@ -2,6 +2,7 @@ package umc.team4.domain.project.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -193,6 +194,7 @@ public class ProjectRestController {
     @PostMapping
     @Operation(
             summary = "프로젝트 등록하기",
+            security = @SecurityRequirement(name = "bearerAuth"),
             description = """
     프로젝트 정보, 스토리 작성, 리워드 설정을 포함하여 새로운 프로젝트를 등록합니다.
 
