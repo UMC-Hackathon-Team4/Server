@@ -35,9 +35,8 @@ public class ProjectRequestDto {
         @Builder
         public static class Reward {
             private String title;
-            private String description;
-            private Long price;
             private Long stock;
+            private Long price;
         }
     }
 }

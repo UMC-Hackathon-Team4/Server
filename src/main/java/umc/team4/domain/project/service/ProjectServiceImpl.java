@@ -92,7 +92,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(fund -> new ProjectResponseDto.RewardDto(
                         fund.getFundId(),
                         fund.getTitle(),
-                        fund.getDescription(),
+                        fund.getStock(),
                         fund.getPrice()
                 ))
                 .toList();
@@ -132,11 +132,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ResponseEntity<ApiResponse> getListByCategory(Category category, Pageable pageable) {
+
         Page<Project> projectPage = projectRepository.findByCategory(category, pageable);
 
         PageInfo pageInfo = new PageInfo(projectPage.getNumber(), projectPage.getSize(),
                 projectPage.hasNext(), projectPage.getTotalElements(), projectPage.getTotalPages());
-
         List<ProjectResponseDto.ProjectSummaryDto> projects = projectPage.getContent().stream()
                 .map(project -> {
                     double percentageDouble = project.getTargetAmount() == 0 ? 0.0 :
@@ -187,6 +187,17 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseDto.ProjectCreate createProject(ProjectRequestDto.Create dto) {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+        if (dto.getTargetAmount() == null || dto.getTargetAmount() <= 0) {
+            throw new GeneralException(ErrorStatus.INVALID_TARGET_AMOUNT);
+        }
+        if (dto.getEndDate() != null && dto.getEndDate().isBefore(LocalDate.now())) {
+            throw new GeneralException(ErrorStatus.PROJECT_ALREADY_CLOSED);
+        }
+        if (dto.getStartDate() != null && dto.getEndDate() != null &&
+                dto.getStartDate().isAfter(dto.getEndDate())) {
+            throw new GeneralException(ErrorStatus.INVALID_PROJECT_DATE_RANGE);
+        }
+
 
         Project project = Project.builder()
                 .user(user)
@@ -208,14 +219,19 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(r -> Fund.builder()
                         .project(project)
                         .title(r.getTitle())
-                        .description(r.getDescription())
                         .price(r.getPrice())
                         .stock(r.getStock())
                         .build())
                 .toList();
 
         fundRepository.saveAll(funds);
-        return null;
+
+        return ProjectResponseDto.ProjectCreate.builder()
+                .projectId(project.getProjectId())
+                .title(project.getTitle())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .build();
     }
 
 }
