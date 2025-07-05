@@ -13,34 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ JDK 설정
+      # 2️⃣ JDK 17 설치
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3️⃣ application.properties 생성 (수정 완료)
+      # 3️⃣ application.properties 생성
       - name: Create application.properties
         run: |
           mkdir -p src/main/resources
-          cat <<EOF > src/main/resources/application.properties
-spring.application.name=team4
+          echo "spring.application.name=team4" > src/main/resources/application.properties
+          echo "spring.datasource.url=${{ secrets.RDS_URL }}" >> src/main/resources/application.properties
+          echo "spring.datasource.username=${{ secrets.RDS_USERNAME }}" >> src/main/resources/application.properties
+          echo "spring.datasource.password=${{ secrets.RDS_PASSWORD }}" >> src/main/resources/application.properties
+          echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> src/main/resources/application.properties
+          echo "spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect" >> src/main/resources/application.properties
+          echo "spring.jpa.hibernate.ddl-auto=update" >> src/main/resources/application.properties
+          echo "spring.jpa.show-sql=true" >> src/main/resources/application.properties
+          echo "spring.jpa.properties.hibernate.format_sql=true" >> src/main/resources/application.properties
 
-# DB
-spring.datasource.url=${{ secrets.RDS_URL }}
-spring.datasource.username=${{ secrets.RDS_USERNAME }}
-spring.datasource.password=${{ secrets.RDS_PASSWORD }}
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# JPA
-spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-EOF
-
-      # 4️⃣ Gradle 실행 권한 부여
+      # 4️⃣ gradlew 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
@@ -70,7 +64,7 @@ EOF
     runs-on: ubuntu-latest
 
     steps:
-      # 8️⃣ 빌드된 JAR 다운로드
+      # 8️⃣ JAR 다운로드
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
@@ -87,20 +81,20 @@ EOF
           echo "$EC2_SSH_KEY" > team4.pem
           chmod 600 team4.pem
 
-          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo '✅ Connected to EC2'"
+          echo "🔗 SSH 접속 테스트"
+          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "echo ✅ Connected"
 
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           echo "🚀 JAR 파일: $jar_file"
 
+          echo "📦 EC2로 파일 전송"
           scp -i team4.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/team4-Server.jar
 
-          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
-            echo "🛑 기존 프로세스 종료 중..."
-            pkill -f 'java -jar' || echo "No process running"
-
-            echo "🚀 새 서버 실행 중..."
+          echo "🔄 서버 재시작"
+          ssh -i team4.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
+            pkill -f 'java -jar' || echo 'No process to kill'
             nohup java -jar /home/$EC2_USERNAME/team4-Server.jar > /home/$EC2_USERNAME/app.log 2>&1 &
-            echo "✅ 배포 완료"
-EOF
+            echo ✅ 배포 완료
+          "
 
           rm -f team4.pem
