@@ -21,7 +21,7 @@
 
 ## 👥 팀원 소개
 
-| <center>김다영<br/>([@kdyann](https://github.com/kdyann))</center> | <center>곽선호<br/>([@Claire](https://github.com/Claire))</center> | <center>이송미<br/>([@soooong7](https://github.com/soooong7))</center> | 
+| <center>김다영<br/>([@kdyann](https://github.com/kdyann))</center> | <center>곽선호<br/>([@Sunho12](https://github.com/Sunho12))</center> | <center>이송미<br/>([@soooong7](https://github.com/soooong7))</center> | 
 | :---------------------------------------------------------: | :------------------------------------------------------------: | :------------------------------------------------------------: |
 | <center><img src="https://avatars.githubusercontent.com/u/143780983?v=4" width="150px"/></center> | <center><img src="https://avatars.githubusercontent.com/u/113418806?v=4" width="150px"/></center> | <center><img src="https://avatars.githubusercontent.com/u/145523888?v=4" width="150px"/></center> |
 
